@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sky VS</title>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
+    body {background: #0d0f1a; color: #fff; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+
+    /* Loading Screen */
+    #loadingScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #0d0f1a; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      animation: fadeOut 1s ease forwards; animation-delay: 4s; /* fade after 4s */
+    }
+    #loadingText {
+      font-size: 3rem; font-weight: bold; color: #4da6ff; animation: glow 1.5s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #4da6ff; }
+      to { text-shadow: 0 0 20px #1ec8ff; }
+    }
+    .loading-bar {
+      margin-top: 20px; width: 300px; height: 10px; background: #333; border-radius: 5px; overflow: hidden;
+    }
+    .loading-bar-fill {
+      width: 0; height: 100%; background: linear-gradient(90deg,#4da6ff,#1ec8ff);
+      animation: load 4s linear forwards;
+    }
+    @keyframes load {
+      to { width: 100%; }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    /* Warning Screen */
+    #warningScreen, #emailScreen, #dashboard {display: none; text-align: center; padding: 20px;}
+    #warningScreen h2 {font-size: 2rem; margin-bottom: 15px; color: #ffcc00;}
+    #warningScreen p {font-size: 1.1rem; margin-bottom: 10px; line-height: 1.6;}
+    button {
+      margin-top: 20px; padding: 10px 20px; font-size: 1rem; border: none;
+      border-radius: 8px; background: #4da6ff; color: #fff; cursor: pointer; transition: 0.3s;
+    }
+    button:hover {background: #1ec8ff;}
+    .note {margin-top: 10px; font-size: 0.85rem; color: #ccc;}
+
+    /* Dashboard */
+    #dashboard h2 {margin-bottom: 20px; font-size: 2rem;}
+    .players {display: flex; gap: 20px; justify-content: center;}
+    .player-box {
+      background: #1a1f33; padding: 20px; border-radius: 12px;
+      box-shadow: 0 0 10px rgba(77,166,255,0.5); min-width: 120px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen">
+    <div id="loadingText">Sky VS</div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  </div>
+
+  <!-- Warning Screen -->
+  <div id="warningScreen">
+    <h2>⚠️ Important Warning</h2>
+    <p>Hi player! Here you can VS with pro players on FC and play together and also make friends.</p>
+    <p>This is not an official platform. This is just a fun-made project for players.</p>
+    <p>We are not responsible for any misuse. Please be respectful to others and enjoy fair play.</p>
+    <button onclick="goEmail()">Continue</button>
+    <div class="note">If you press Continue that means you read the following warning.</div>
+  </div>
+
+  <!-- Email Message Screen -->
+  <div id="emailScreen">
+    <h2>📧 Contact Info</h2>
+    <p>You will receive an email message if you VS with any other player. They will give you email to contact.</p>
+    <p>In the next update, we will add a direct messaging option inside this platform.</p>
+    <button onclick="goDashboard()">OK</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <h2>🎮 Sky VS Dashboard</h2>
+    <div class="players">
+      <div class="player-box">MAHIR17</div>
+      <div class="player-box">sahin-website</div>
+    </div>
+  </div>
+
+  <script>
+    // After loading screen ends, show warning
+    setTimeout(() => {
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('warningScreen').style.display = 'block';
+    }, 5000);
+
+    function goEmail() {
+      document.getElementById('warningScreen').style.display = 'none';
+      document.getElementById('emailScreen').style.display = 'block';
+    }
+
+    function goDashboard() {
+      document.getElementById('emailScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
