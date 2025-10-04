@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sky VS</title>
   <style>
-    * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
-    body {background: #0d0f1a; color: #fff; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial, sans-serif;}
+    body{background:#fff;overflow:hidden;}
 
     /* Loading Screen */
     #loadingScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #0d0f1a; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      animation: fadeOut 1s ease forwards; animation-delay: 4s; /* fade after 4s */
     }
     #loadingText {
       font-size: 3rem; font-weight: bold; color: #4da6ff; animation: glow 1.5s infinite alternate;
@@ -28,31 +27,72 @@
       width: 0; height: 100%; background: linear-gradient(90deg,#4da6ff,#1ec8ff);
       animation: load 4s linear forwards;
     }
-    @keyframes load {
-      to { width: 100%; }
-    }
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
+    @keyframes load { to { width: 100%; } }
 
     /* Warning Screen */
-    #warningScreen, #emailScreen, #dashboard {display: none; text-align: center; padding: 20px;}
-    #warningScreen h2 {font-size: 2rem; margin-bottom: 15px; color: #ffcc00;}
-    #warningScreen p {font-size: 1.1rem; margin-bottom: 10px; line-height: 1.6;}
+    #warningScreen, #emailScreen, #dashboard {display:none; text-align:center; padding:20px;}
+    #warningScreen h2 {font-size:2rem; margin-bottom:15px; color:#ffcc00;}
+    #warningScreen p {font-size:1.1rem; margin-bottom:10px; line-height:1.6;}
     button {
-      margin-top: 20px; padding: 10px 20px; font-size: 1rem; border: none;
-      border-radius: 8px; background: #4da6ff; color: #fff; cursor: pointer; transition: 0.3s;
+      margin-top:20px; padding:10px 20px; font-size:1rem; border:none;
+      border-radius:8px; background:#4da6ff; color:#fff; cursor:pointer; transition:0.3s;
     }
-    button:hover {background: #1ec8ff;}
-    .note {margin-top: 10px; font-size: 0.85rem; color: #ccc;}
+    button:hover {background:#1ec8ff;}
+    .note {margin-top:10px; font-size:0.85rem; color:#555;}
+
+    /* Bubble Background */
+    .bubbles{
+      position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:-1;
+    }
+    .bubbles span{
+      position:absolute;bottom:-150px;width:40px;height:40px;
+      background:rgba(77,166,255,0.3);border-radius:50%;
+      animation:rise 15s infinite ease-in;
+    }
+    .bubbles span:nth-child(1){left:10%;animation-duration:12s;width:25px;height:25px;}
+    .bubbles span:nth-child(2){left:30%;animation-duration:18s;width:50px;height:50px;}
+    .bubbles span:nth-child(3){left:50%;animation-duration:20s;width:35px;height:35px;}
+    .bubbles span:nth-child(4){left:70%;animation-duration:15s;width:40px;height:40px;}
+    .bubbles span:nth-child(5){left:90%;animation-duration:22s;width:60px;height:60px;}
+    @keyframes rise{0%{transform:translateY(0) scale(1);}100%{transform:translateY(-110vh) scale(1.5);}}
 
     /* Dashboard */
-    #dashboard h2 {margin-bottom: 20px; font-size: 2rem;}
-    .players {display: flex; gap: 20px; justify-content: center;}
+    #dashboard h2 {margin-bottom:30px; font-size:2.2rem; color:#333;}
+    .players {display:flex; gap:25px; justify-content:center; flex-wrap:wrap;}
     .player-box {
-      background: #1a1f33; padding: 20px; border-radius: 12px;
-      box-shadow: 0 0 10px rgba(77,166,255,0.5); min-width: 120px; text-align: center;
+      background:#1a1f33; color:#fff; padding:20px 30px;
+      border-radius:12px; cursor:pointer; font-size:1.2rem;
+      box-shadow:0 0 15px rgba(0,0,0,0.2);
+      transition:transform .2s, background .2s;
     }
+    .player-box:hover{transform:scale(1.05); background:#4da6ff;}
+
+    /* Modal Card */
+    .modal{
+      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center;
+    }
+    .modal-content{
+      background:#fff; color:#333; padding:30px; border-radius:12px;
+      width:300px; text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.3);
+      animation:pop .3s ease;
+    }
+    @keyframes pop{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+    .modal h3{margin-bottom:10px;}
+    .challenge-btn{
+      margin-top:15px; padding:10px 20px; background:#4da6ff; color:#fff;
+      border:none; border-radius:8px; cursor:pointer; transition:0.3s;
+    }
+    .challenge-btn:hover{background:#1ec8ff;}
+    .close-btn{margin-top:10px; font-size:0.9rem; cursor:pointer; color:#666;}
+    
+    /* Challenge Message */
+    #challengeMsg{
+      display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+      background:#1a1f33; color:#fff; padding:15px 25px; border-radius:8px;
+      box-shadow:0 0 10px rgba(0,0,0,0.4); animation:fadeIn .5s ease;
+    }
+    @keyframes fadeIn{from{opacity:0;bottom:0;}to{opacity:1;bottom:20px;}}
   </style>
 </head>
 <body>
@@ -83,15 +123,35 @@
 
   <!-- Dashboard -->
   <div id="dashboard">
+    <div class="bubbles">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
     <h2>🎮 Sky VS Dashboard</h2>
     <div class="players">
-      <div class="player-box">MAHIR17</div>
-      <div class="player-box">sahin-website</div>
+      <div class="player-box" onclick="openModal('MAHIR17')">MAHIR17</div>
+      <div class="player-box" onclick="openModal('sahin-website')">sahin-website</div>
+      <div class="player-box" onclick="openModal('PROGAMER99')">PROGAMER99</div>
+      <div class="player-box" onclick="openModal('XxShadowxX')">XxShadowxX</div>
     </div>
   </div>
 
+  <!-- Modal -->
+  <div id="playerModal" class="modal">
+    <div class="modal-content">
+      <h3 id="playerName">Player</h3>
+      <p>FC ID: <span id="playerId"></span></p>
+      <button class="challenge-btn" onclick="challengePlayer()">Challenge Player!</button>
+      <div class="close-btn" onclick="closeModal()">❌ Close</div>
+    </div>
+  </div>
+
+  <!-- Challenge Message -->
+  <div id="challengeMsg"></div>
+
   <script>
-    // After loading screen ends, show warning
+    let currentPlayer = "";
+
+    // After loading screen ends → show warning
     setTimeout(() => {
       document.getElementById('loadingScreen').style.display = 'none';
       document.getElementById('warningScreen').style.display = 'block';
@@ -106,6 +166,26 @@
       document.getElementById('emailScreen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
     }
+
+    function openModal(name){
+      currentPlayer = name;
+      document.getElementById("playerId").innerText = name;
+      document.getElementById("playerName").innerText = "Challenge " + name;
+      document.getElementById("playerModal").style.display = "flex";
+    }
+
+    function closeModal(){
+      document.getElementById("playerModal").style.display = "none";
+    }
+
+    function challengePlayer(){
+      document.getElementById("playerModal").style.display = "none";
+      let msgBox = document.getElementById("challengeMsg");
+      msgBox.innerText = `You Challenged ${currentPlayer}. Ready now. You will play in 24 hours. Go now and add friend on FC to play.`;
+      msgBox.style.display = "block";
+      setTimeout(()=>{ msgBox.style.display="none"; }, 6000);
+    }
   </script>
 </body>
 </html>
+
