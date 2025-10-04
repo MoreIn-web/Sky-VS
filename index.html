@@ -1,205 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Sky VS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {margin:0; padding:0; box-sizing:border-box; font-family: 'Poppins', sans-serif;}
-    body {background:#fff; overflow:hidden;}
-    #loadingScreen {
+    * { margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif; }
+    body { background:#fff; overflow:hidden; }
+
+    /* Loading Screen */
+    #loading {
       position:fixed; top:0; left:0; width:100%; height:100%;
-      background:radial-gradient(circle, #000 20%, #111);
-      display:flex; flex-direction:column; justify-content:center; align-items:center; color:#0ff;
-      font-size:2rem; z-index:9999; animation:fadeIn 1s ease;
+      background:#000; color:#0ff; display:flex; flex-direction:column;
+      justify-content:center; align-items:center; z-index:9999;
     }
-    .loading-bar {width:60%; height:8px; background:#333; border-radius:10px; margin-top:20px; overflow:hidden;}
-    .loading-fill {height:100%; width:0%; background:linear-gradient(90deg,#0ff,#00f); animation:loading 4s linear forwards;}
-    @keyframes loading {100% {width:100%;}}
-    @keyframes fadeIn {0%{opacity:0;}100%{opacity:1;}}
-    #warningScreen,#loginScreen,#dashboard {display:none; text-align:center; padding:20px;}
-    button {
-      background:#0078ff; color:#fff; border:none; padding:10px 20px; border-radius:10px;
-      cursor:pointer; margin-top:15px; transition:0.3s;
+    #loading h1 { font-size:50px; animation: glow 1.5s infinite alternate; }
+    @keyframes glow { from { text-shadow:0 0 10px #0ff; } to { text-shadow:0 0 30px #0ff; } }
+    #progress {
+      margin-top:20px; width:60%; height:8px; background:#333; border-radius:4px; overflow:hidden;
     }
-    button:hover {background:#005ecb;}
+    #bar { width:0; height:100%; background:#0ff; transition:width 0.3s; }
+
+    /* Popup Warning */
+    .popup {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.9); color:#fff; display:flex;
+      justify-content:center; align-items:center; flex-direction:column; text-align:center;
+      padding:20px; z-index:9998;
+    }
+    .popup button { margin-top:20px; padding:10px 20px; background:#0ff; border:none; border-radius:5px; cursor:pointer; }
+
+    /* Login */
+    #login {
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      height:100vh; background:#111; color:#fff; display:none;
+    }
+    #login input {
+      margin:10px; padding:10px; border:none; border-radius:5px; width:200px;
+    }
+    #login button { padding:10px 20px; border:none; border-radius:5px; background:#0ff; cursor:pointer; }
+
+    /* Dashboard */
     #dashboard {
-      background:#fefefe; min-height:100vh; position:relative;
-      animation:fadeIn 1s ease;
+      display:none; position:relative; height:100vh; overflow:hidden; background:#fff;
     }
+    #players { display:flex; flex-wrap:wrap; padding:20px; }
+    .player {
+      background:#f5f5f5; border-radius:10px; padding:20px; margin:10px; flex:1 1 200px;
+      text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.2); cursor:pointer;
+      transition:transform 0.2s;
+    }
+    .player:hover { transform:scale(1.05); }
+
+    /* Profile button */
+    #profileBtn {
+      position:absolute; top:10px; right:10px; background:#0ff; padding:10px 15px; border:none;
+      border-radius:5px; cursor:pointer;
+    }
+
+    /* Animated bubbles */
     .bubble {
-      position:absolute; bottom:-150px; background:rgba(0,150,255,0.2);
-      border-radius:50%; animation:rise 10s infinite ease-in;
+      position:absolute; bottom:-100px; background:rgba(0,255,255,0.3); border-radius:50%;
+      animation: rise 15s infinite ease-in;
     }
     @keyframes rise {
-      0% {transform:translateY(0) scale(1);}
-      100% {transform:translateY(-110vh) scale(1.5); opacity:0;}
+      0% { transform:translateY(0) scale(1); opacity:1; }
+      100% { transform:translateY(-120vh) scale(0.5); opacity:0; }
     }
-    .player-card {
-      background:#fff; border:1px solid #ccc; border-radius:15px; padding:15px; margin:15px auto;
-      width:300px; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:0.3s;
+
+    /* Card Popup */
+    #card {
+      position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7);
+      display:none; justify-content:center; align-items:center; z-index:999;
     }
-    .player-card:hover {transform:scale(1.03);}
-    #profileBtn {
-      position:absolute; top:15px; right:15px; background:#00b7ff; padding:8px 15px;
+    #cardContent {
+      background:#fff; padding:20px; border-radius:10px; text-align:center;
+      max-width:300px;
     }
-    #profileSection {
-      display:none; background:#fff; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,0.1);
-      width:320px; padding:20px; margin:auto; animation:fadeIn 0.5s ease;
+    #cardContent input { margin:10px 0; padding:8px; width:90%; border:1px solid #ccc; border-radius:5px; }
+    #cardContent button { margin-top:10px; padding:10px; background:#0ff; border:none; border-radius:5px; cursor:pointer; }
+
+    /* Profile form */
+    #profileForm {
+      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000;
     }
-    input {
-      width:90%; padding:10px; border:1px solid #aaa; border-radius:8px; margin:5px 0;
+    #profileForm form {
+      background:#fff; padding:20px; border-radius:10px; display:flex; flex-direction:column;
     }
+    #profileForm input { margin:5px 0; padding:10px; border:1px solid #ccc; border-radius:5px; }
+    #profileForm button { margin-top:10px; padding:10px; background:#0ff; border:none; border-radius:5px; cursor:pointer; }
   </style>
 </head>
 <body>
-
-  <!-- LOADING SCREEN -->
-  <div id="loadingScreen">
-    <h1 id="loadingText">Sky VS</h1>
-    <div class="loading-bar"><div class="loading-fill"></div></div>
+  <!-- Loading -->
+  <div id="loading">
+    <h1>Sky VS</h1>
+    <div id="progress"><div id="bar"></div></div>
   </div>
 
-  <!-- WARNING SCREEN -->
-  <div id="warningScreen">
+  <!-- Popup Warning -->
+  <div id="warning" class="popup" style="display:none;">
     <h2>⚠️ HI player!</h2>
-    <p>Here you can VS with pro players on FC and play together or make friends.<br><br>
-    This is not official — made for fun by players ❤️</p>
-    <p style="margin-top:15px;">If you press continue, that means you read the warning.</p>
-    <button id="continueBtn">Continue</button>
+    <p>Here you can VS with pro players on FC and play together. This is not official, just fun for players!</p>
+    <p>Disclaimer: This site is fan-made only. Not official.</p>
+    <button onclick="showSecondWarning()">Continue</button>
+    <p style="margin-top:10px; font-size:12px;">If you press continue, that means you read the following warning.</p>
   </div>
 
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen">
-    <h2>🔐 Sign In</h2>
-    <input id="loginName" placeholder="Enter your Name" required><br>
-    <input type="password" id="loginPass" placeholder="Enter a Password" required><br>
-    <button id="loginBtn">Login</button>
+  <div id="secondWarning" class="popup" style="display:none;">
+    <p>You will receive an email message if you VS with any player. Next update we will add messaging option.</p>
+    <button onclick="showLogin()">OK</button>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- Login -->
+  <div id="login">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Name">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Sign In</button>
+  </div>
+
+  <!-- Dashboard -->
   <div id="dashboard">
-    <button id="profileBtn">Profile</button>
-    <div id="profileSection">
-      <h3>My VS</h3>
-      <input id="player-name" placeholder="Your Name">
-      <input id="player-fcid" placeholder="Your FC ID">
-      <input id="player-email" placeholder="Your Email">
-      <button id="upload-btn">Upload</button>
-      <p id="statusMsg"></p>
-    </div>
+    <button id="profileBtn" onclick="openProfileForm()">Profile</button>
+    <div id="players"></div>
+  </div>
 
-    <h2 style="margin-top:60px;">Player Dashboard</h2>
-    <div id="playersList"></div>
+  <!-- Player Card -->
+  <div id="card">
+    <div id="cardContent"></div>
+  </div>
+
+  <!-- Profile Form -->
+  <div id="profileForm">
+    <form onsubmit="uploadPlayer(event)">
+      <h3>Add My VS</h3>
+      <input type="text" id="pName" placeholder="Name" required>
+      <input type="text" id="pFCID" placeholder="FC_ID" required>
+      <input type="email" id="pEmail" placeholder="Email" required>
+      <button type="submit">Upload</button>
+      <button type="button" onclick="closeProfileForm()">Close</button>
+    </form>
   </div>
 
   <script>
-    const API = "https://sheetdb.io/api/v1/ftobifx3mhc84";
+    const API = "https://sheetdb.io/api/v1/i6dgu53mhxpvx";
 
-    // LOADING
-    window.onload = () => {
-      setTimeout(() => {
-        document.getElementById("loadingScreen").style.display="none";
-        document.getElementById("warningScreen").style.display="block";
-      }, 4000);
-      createBubbles();
-    };
+    // Loading animation
+    let load = 0;
+    let interval = setInterval(() => {
+      load += 10;
+      document.getElementById('bar').style.width = load + "%";
+      if (load >= 100) {
+        clearInterval(interval);
+        document.getElementById('loading').style.display = "none";
+        document.getElementById('warning').style.display = "flex";
+      }
+    }, 400);
 
-    // WARNING → LOGIN
-    document.getElementById("continueBtn").onclick = () => {
-      document.getElementById("warningScreen").style.display="none";
-      if(localStorage.getItem("skyUser")) showDashboard();
-      else document.getElementById("loginScreen").style.display="block";
-    };
-
-    // LOGIN SYSTEM
-    document.getElementById("loginBtn").onclick = () => {
-      const name = document.getElementById("loginName").value.trim();
-      const pass = document.getElementById("loginPass").value.trim();
-      if(!name || !pass) return alert("Fill all fields!");
-      localStorage.setItem("skyUser", JSON.stringify({name,pass}));
-      showDashboard();
-    };
-
-    // SHOW DASHBOARD
-    function showDashboard(){
-      document.getElementById("loginScreen").style.display="none";
-      document.getElementById("dashboard").style.display="block";
-      loadPlayers();
+    function showSecondWarning() {
+      document.getElementById('warning').style.display = "none";
+      document.getElementById('secondWarning').style.display = "flex";
     }
 
-    // PROFILE SHOW/HIDE
-    document.getElementById("profileBtn").onclick = ()=>{
-      const p = document.getElementById("profileSection");
-      p.style.display = p.style.display === "none" ? "block" : "none";
-    };
-
-    // UPLOAD PLAYER
-    document.getElementById("upload-btn").addEventListener("click", async ()=>{
-      const name=document.getElementById("player-name").value.trim();
-      const fc=document.getElementById("player-fcid").value.trim();
-      const email=document.getElementById("player-email").value.trim();
-      if(!name||!fc||!email){alert("Please fill all fields!");return;}
-
-      const res = await fetch(API,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({data:[{Name:name,FC_ID:fc,Email:email}]})
-      });
-
-      const result = await res.json();
-      if(result.created===1){
-        document.getElementById("statusMsg").innerText="✅ Player uploaded!";
+    function showLogin() {
+      document.getElementById('secondWarning').style.display = "none";
+      if (localStorage.getItem("loggedIn")) {
         loadPlayers();
       } else {
-        document.getElementById("statusMsg").innerText="❌ Upload failed, check DB permission.";
+        document.getElementById('login').style.display = "flex";
       }
-    });
-
-    // LOAD PLAYERS
-    async function loadPlayers(){
-      const res = await fetch(API);
-      const data = await res.json();
-      const list = document.getElementById("playersList");
-      list.innerHTML="";
-      data.forEach(p=>{
-        const card=document.createElement("div");
-        card.className="player-card";
-        card.innerHTML=`<h3>${p.Name}</h3><p>FC ID: ${p.FC_ID}</p>
-        <button onclick="challenge('${p.Name}','${p.Email}','${p.FC_ID}')">VS This Player</button>`;
-        list.appendChild(card);
-      });
     }
 
-    // CHALLENGE SYSTEM
-    window.challenge=(name,email,fc)=>{
-      const myFc=prompt(`Enter your FC ID to VS ${name}:`);
-      if(myFc){
-        alert(`✅ You challenged ${name}!\nYou will play in 24 hours.\nYour FC ID: ${myFc}`);
-        fetch(API,{
+    function login() {
+      let user = document.getElementById('username').value;
+      let pass = document.getElementById('password').value;
+      if (user && pass) {
+        localStorage.setItem("loggedIn", "true");
+        document.getElementById('login').style.display = "none";
+        loadPlayers();
+      }
+    }
+
+    function loadPlayers() {
+      document.getElementById('dashboard').style.display = "block";
+      document.body.style.overflow = "auto";
+      fetch(API).then(res => res.json()).then(data => {
+        let playersDiv = document.getElementById('players');
+        playersDiv.innerHTML = "";
+        data.forEach(player => {
+          let div = document.createElement("div");
+          div.className = "player";
+          div.innerHTML = `<h3>${player.Name}</h3><p>ID: ${player.FC_ID}</p>`;
+          div.onclick = () => openCard(player);
+          playersDiv.appendChild(div);
+        });
+      });
+
+      // bubbles
+      for (let i=0;i<20;i++){
+        let bubble=document.createElement("div");
+        bubble.className="bubble";
+        let size=Math.random()*40+20;
+        bubble.style.width=size+"px";
+        bubble.style.height=size+"px";
+        bubble.style.left=Math.random()*100+"%";
+        bubble.style.animationDuration=(Math.random()*10+5)+"s";
+        document.getElementById('dashboard').appendChild(bubble);
+      }
+    }
+
+    function openCard(player) {
+      document.getElementById('card').style.display = "flex";
+      document.getElementById('cardContent').innerHTML = `
+        <h3>${player.Name}</h3>
+        <p>FC_ID: ${player.FC_ID}</p>
+        <p>Email: ${player.Email || "Not Provided"}</p>
+        <input type="email" id="challengeEmail" placeholder="Enter your Email (optional)">
+        <button onclick="challengePlayer('${player.Name}','${player.FC_ID}')">Challenge Player!</button>
+        <button onclick="closeCard()">Close</button>
+      `;
+    }
+    function closeCard() { document.getElementById('card').style.display="none"; }
+
+    function challengePlayer(name, fcid) {
+      let myid = prompt("Enter your FC_ID to VS this player:");
+      let myEmail = document.getElementById("challengeEmail").value;
+      if(myid){
+        alert(`You challenged ${name}. Match will start soon!`);
+        // Save VS + email (if provided)
+        fetch(API, {
           method:"POST",
           headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({data:[{Name:name,FC_ID:myFc,Email:email}]})
+          body:JSON.stringify({ data:[{ Name:"VS", FC_ID: myid+" vs "+fcid, Email: myEmail||"" }] })
         });
       }
     }
 
-    // BUBBLES BG
-    function createBubbles(){
-      const dash=document.getElementById("dashboard");
-      for(let i=0;i<15;i++){
-        const b=document.createElement("div");
-        b.classList.add("bubble");
-        const size=Math.random()*50+20;
-        b.style.width=b.style.height=size+"px";
-        b.style.left=Math.random()*100+"%";
-        b.style.animationDuration=(Math.random()*8+4)+"s";
-        dash.appendChild(b);
-      }
+    function openProfileForm(){ document.getElementById('profileForm').style.display="flex"; }
+    function closeProfileForm(){ document.getElementById('profileForm').style.display="none"; }
+
+    function uploadPlayer(e){
+      e.preventDefault();
+      let name=document.getElementById('pName').value;
+      let id=document.getElementById('pFCID').value;
+      let email=document.getElementById('pEmail').value;
+      fetch(API,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ data:[{ Name:name, FC_ID:id, Email:email }] })
+      }).then(r=>r.json()).then(res=>{
+        alert("Uploaded Successfully!");
+        closeProfileForm();
+        loadPlayers();
+      }).catch(err=>alert("Upload Failed: "+err));
     }
   </script>
 </body>
 </html>
+
 
 
 
