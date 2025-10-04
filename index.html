@@ -3,92 +3,58 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sky VS — Players</title>
-<link rel="icon" href="data:," />
+<title>Sky VS — Players (SheetDB)</title>
 <style>
-  :root{
-    --accent:#4da6ff;
-    --accent-2:#1ec8ff;
-    --dark:#0f1724;
-    --card:#1a1f33;
-    --muted:#666;
-  }
+  :root{--accent:#4da6ff;--accent2:#1ec8ff;--dark:#0f1724;--card:#1a1f33;--muted:#666}
   *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
-  html,body{height:100%;margin:0;background:#fff;color:#111}
-  /* Loading screen */
-  #loadingScreen{
-    position:fixed;inset:0;background:linear-gradient(180deg,#071129 0%, #0d1726 60%);display:flex;
-    align-items:center;justify-content:center;flex-direction:column;z-index:9999;
-  }
-  #loadingText{font-size:3rem;color:var(--accent);font-weight:800;letter-spacing:2px;
-    text-shadow:0 6px 20px rgba(30,200,255,0.08);animation:glow 1.5s ease-in-out infinite alternate;}
-  @keyframes glow{from{filter:drop-shadow(0 0 8px rgba(77,166,255,0.25))} to{filter:drop-shadow(0 0 28px rgba(30,200,255,0.45))}}
-  .loading-bar{width:60%;max-width:520px;height:12px;background:rgba(255,255,255,0.08);border-radius:8px;margin-top:18px;overflow:hidden}
-  .loading-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));animation:load 3.6s linear forwards;border-radius:8px}
+  body{margin:0;background:#fff;color:#111}
+  /* Loading */
+  #loadingScreen{position:fixed;inset:0;background:linear-gradient(180deg,#071129,#0d1726);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+  #loadingText{font-size:2.8rem;color:var(--accent);font-weight:800;letter-spacing:1px;animation:glow 1.6s linear infinite alternate}
+  @keyframes glow{from{text-shadow:0 6px 18px rgba(77,166,255,.18)}to{text-shadow:0 18px 36px rgba(30,200,255,.32)}}
+  .loading-bar{width:60%;max-width:520px;height:12px;background:rgba(255,255,255,0.06);border-radius:8px;margin-top:18px;overflow:hidden}
+  .loading-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:load 3.6s linear forwards;border-radius:8px}
   @keyframes load{to{width:100%}}
-  /* small shimmer */
-  .loading-sub{margin-top:12px;color:#bcd9ff;opacity:.85;font-size:.92rem}
-
-  /* Hide screens initially (JS controls) */
-  #warningScreen,#infoScreen,#dashboard,#profileModal,#playerModal,#loginScreen{display:none}
-
-  /* Warning & info screens */
-  .centerScreen{position:fixed;inset:0;background:linear-gradient(180deg,#f8fafc,#ffffff);display:flex;align-items:center;justify-content:center;z-index:900;padding:24px}
-  .panel{width:100%;max-width:760px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(24,39,75,0.08);padding:28px;text-align:left}
-  .panel h2{color:#ff9800;margin:0 0 10px;font-size:1.6rem}
-  .panel p{color:#222;line-height:1.55;margin:8px 0}
-  .panel .muted{color:var(--muted);font-size:.95rem;margin-top:12px}
-  .btn{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:600}
-  .btn:hover{background:var(--accent-2)}
-
-  /* Topbar */
+  .loading-sub{margin-top:12px;color:#cfeaff;font-size:.95rem}
+  /* hide controlled screens by JS initially */
+  #warningScreen,#infoScreen,#loginScreen,#dashboard,#playerModal,#profileModal{display:none}
+  /* center panels */
+  .centerScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#f8fbff,#ffffff);z-index:900;padding:20px}
+  .panel{max-width:820px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.08)}
+  .panel h2{margin:0 0 8px;font-size:1.5rem}
+  .panel p{margin:8px 0;color:#222;line-height:1.5}
+  .btn{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
+  .btn:hover{background:var(--accent2)}
+  /* topbar */
   header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:transparent;position:relative;z-index:10}
   .brand{display:flex;align-items:center;gap:12px}
-  .brand .logo{width:44px;height:44;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
-  .brand h1{font-size:1.1rem;margin:0;color:#0b1220}
-  .top-actions{display:flex;align-items:center;gap:12px}
-
-  /* Dashboard main */
-  #mainWrap{padding:28px;max-width:1100px;margin:0 auto}
-  h2.pageTitle{font-size:1.6rem;margin:8px 0 18px}
-  .players{display:flex;flex-wrap:wrap;gap:16px}
-  .player-card{width:200px;background:var(--card);color:#fff;padding:14px;border-radius:12px;box-shadow:0 8px 22px rgba(17,24,39,0.18);cursor:pointer;transition:transform .18s,box-shadow .18s}
-  .player-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(30,100,255,0.12)}
-  .player-name{font-weight:700;font-size:1.05rem}
-  .player-sub{font-size:.9rem;color:#d2eaff;margin-top:8px}
-  .player-meta{margin-top:10px;font-size:.82rem;color:#bcd9ff}
-
-  /* bubble background */
-  .bubbles{position:fixed;inset:0;pointer-events:none;z-index:-1}
-  .bubble{position:absolute;border-radius:50%;background:linear-gradient(180deg,rgba(77,166,255,0.18),rgba(30,200,255,0.08));filter:blur(6px);opacity:.9}
-
-  /* Profile button */
-  .profileBtn{background:#fff;border:1px solid rgba(14,21,35,0.06);padding:8px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px}
-  .profileBtn .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
-
-  /* Modals */
+  .logo{width:44px;height:44;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+  /* main */
+  #mainWrap{max-width:1100px;margin:18px auto;padding:20px}
+  h2.pageTitle{font-size:1.4rem;margin:0 0 12px}
+  .topRow{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}
+  .players{display:flex;flex-wrap:wrap;gap:14px}
+  .player-card{width:200px;background:var(--card);color:#fff;padding:14px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.12);cursor:pointer;transition:transform .16s,box-shadow .16s}
+  .player-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(30,100,255,.12)}
+  .player-name{font-weight:700;font-size:1rem}
+  .player-fc{color:#cfeaff;margin-top:8px;font-size:.92rem}
+  .player-email{font-size:.82rem;color:#bcd9ff;margin-top:6px}
+  /* forms */
+  .cardLight{background:#f7fbff;padding:12px;border-radius:10px;border:1px solid #eef7ff}
+  .input{padding:10px;border-radius:8px;border:1px solid #e6eefc;width:100%}
+  .row{display:flex;gap:10px}
+  /* modals */
   .modal{position:fixed;inset:0;background:rgba(8,12,18,0.45);display:flex;align-items:center;justify-content:center;z-index:1000}
-  .modal .card{background:#fff;padding:20px;border-radius:12px;width:360px;box-shadow:0 18px 40px rgba(12,18,40,0.18)}
-  .modal h3{margin:0 0 10px}
+  .modal .card{background:#fff;padding:16px;border-radius:12px;width:360px;box-shadow:0 18px 40px rgba(0,0,0,.18)}
   .field{display:flex;flex-direction:column;margin:8px 0}
-  .field input{padding:10px;border-radius:8px;border:1px solid #e6eefc}
-  .small{font-size:.85rem;color:var(--muted);margin-top:6px}
-
+  .small{font-size:.9rem;color:#666}
   /* toast */
-  #toast{position:fixed;right:20px;bottom:20px;background:#0b1726;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.2);display:none;z-index:1200}
-
-  /* login screen */
-  #loginScreen{position:fixed;inset:0;background:linear-gradient(180deg,#071129 0%, #0d1726 60%);display:flex;align-items:center;justify-content:center;z-index:99999}
-  #loginBox{background:#fff;padding:26px;border-radius:12px;width:360px;box-shadow:0 18px 40px rgba(0,0,0,0.25);text-align:center}
-  #loginBox h2{margin:0 0 10px;color:#0b1220}
-  #loginBox .small{color:#455;text-align:left;margin-top:8px}
-
-  /* small responsive */
-  @media (max-width:640px){
-    .player-card{width:48%}
-    .loading-bar{width:80%}
-    #loginBox{width:92%}
-  }
+  #toast{position:fixed;right:20px;bottom:20px;background:#0b1726;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;z-index:1200}
+  /* challenge list */
+  .challenges{margin-top:18px;background:#fff;padding:12px;border-radius:10px;border:1px solid #f2f8ff}
+  .chall-item{padding:8px;border-bottom:1px dashed #eef6ff;font-size:.95rem}
+  .muted{color:#666;font-size:.92rem}
+  @media (max-width:640px){.player-card{width:48%}.loading-bar{width:80%}}
 </style>
 </head>
 <body>
@@ -97,96 +63,95 @@
 <div id="loadingScreen">
   <div id="loadingText">Sky VS</div>
   <div class="loading-bar"><div class="loading-fill"></div></div>
-  <div class="loading-sub">Loading players, assets and fun...</div>
+  <div class="loading-sub">Preparing players & connecting to SheetDB...</div>
 </div>
 
-<!-- Warning Screen -->
+<!-- Warning -->
 <div id="warningScreen" class="centerScreen">
   <div class="panel">
     <h2>⚠️ Important Warning</h2>
     <p>Hi player! Here you can VS with pro players on FC and play together and also make friends.</p>
-    <p>This is <strong>not an official</strong> platform — it's a fun project made by players. Use respectfully and at your own risk.</p>
-    <p class="muted">We do not share private info. If you use the Add/Upload features, do not add sensitive data. By pressing Continue you acknowledge that you've read this warning.</p>
-    <div style="margin-top:18px;text-align:right">
+    <p><strong>This is not an official platform.</strong> It is a fun project made by players. Be respectful and avoid sharing sensitive info.</p>
+    <div style="text-align:right;margin-top:14px">
       <button class="btn" onclick="goToInfo()">Continue</button>
     </div>
   </div>
 </div>
 
-<!-- Info Screen -->
+<!-- Info -->
 <div id="infoScreen" class="centerScreen">
   <div class="panel">
     <h2>📧 Info</h2>
-    <p>You will receive relevant emails if you VS with other players (if email is provided). In future updates we'll add in-app messaging.</p>
-    <p class="muted">Click OK to open the dashboard.</p>
-    <div style="margin-top:18px;text-align:right">
+    <p>You will receive emails if you VS with other players (when email is provided). We plan to add in-app messaging in future updates.</p>
+    <div style="text-align:right;margin-top:14px">
       <button class="btn" onclick="openDashboard()">OK</button>
     </div>
   </div>
 </div>
 
 <!-- Login (one-time) -->
-<div id="loginScreen">
-  <div id="loginBox">
-    <div style="display:flex;align-items:center;justify-content:center;margin-bottom:12px">
-      <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">SV</div>
-    </div>
+<div id="loginScreen" class="centerScreen">
+  <div class="panel" style="max-width:420px;text-align:center">
+    <div style="display:flex;justify-content:center;margin-bottom:10px"><div class="logo" style="width:64px;height:64px;border-radius:12px">SV</div></div>
     <h2>Sign Up / Login</h2>
-    <p style="color:#516;opacity:.85">Enter a name & password — you won't see this again on this browser.</p>
+    <p class="muted">Enter Name & Password. This is stored locally on your browser so login won't show again here.</p>
     <div style="margin-top:12px;text-align:left">
       <label class="small">Name</label>
-      <input id="loginName" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc" placeholder="Your display name" />
+      <input id="loginName" class="input" placeholder="Display name" />
       <label class="small" style="margin-top:8px">Password</label>
-      <input id="loginPass" type="password" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc" placeholder="Choose a password" />
+      <input id="loginPass" class="input" type="password" placeholder="Choose a password" />
       <div style="text-align:right;margin-top:10px">
         <button class="btn" onclick="doLogin()">Sign In</button>
       </div>
-      <div class="small" style="margin-top:8px;color:#bcd9ff">This is a simple local sign-in — used for showing your FC while challenging.</div>
     </div>
   </div>
 </div>
 
-<!-- Top bar -->
+<!-- Topbar -->
 <header>
   <div class="brand">
     <div class="logo">SV</div>
-    <div><h1>Sky VS</h1></div>
+    <div><strong>Sky VS</strong></div>
   </div>
-  <div class="top-actions">
-    <button id="profileBtn" class="profileBtn" title="Profile" onclick="openProfile()"><span class="dot"></span><span id="profileName">Profile</span></button>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn" onclick="document.getElementById('addMyForm').scrollIntoView({behavior:'smooth'})">➕ Add Your Player</button>
+    <button id="profileBtn" class="btn" onclick="openProfile()" style="background:#fff;border:1px solid #e6eefc;color:#0b1220">Profile</button>
   </div>
 </header>
 
-<!-- Main Dashboard -->
-<div id="mainWrap">
+<!-- Main -->
+<div id="mainWrap" style="display:none">
   <div id="dashboard">
     <h2 class="pageTitle">🎮 Sky VS Dashboard</h2>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div style="color:var(--muted)">Players online — click a card to view / invite / VS</div>
-      <div>
-        <button class="btn" onclick="document.getElementById('addMyForm').scrollIntoView({behavior:'smooth'})">➕ Add Your Player</button>
-      </div>
+    <div class="topRow">
+      <div class="muted">Players — click a card to view, invite or VS</div>
+      <div class="muted" id="signedAs"></div>
     </div>
 
-    <!-- player list -->
-    <div class="players" id="playersContainer">
-      <!-- dynamically injected -->
+    <div id="playersContainer" class="players">
+      <!-- injected -->
     </div>
 
-    <!-- Add My Player Form -->
-    <div id="addMyForm" style="margin-top:26px;max-width:560px">
-      <div style="background:#f7fbff;padding:14px;border-radius:12px;border:1px solid #eef7ff">
-        <h3 style="margin:0 0 8px">➕ Add My VS (Upload)</h3>
+    <!-- Add My Player -->
+    <div id="addMyForm" style="margin-top:20px;max-width:760px">
+      <div class="cardLight">
+        <h3 style="margin:0 0 8px">➕ Add My VS (Upload to sheet)</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <input id="myName" placeholder="Name" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefc" />
-          <input id="myFc" placeholder="FC_ID" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefc" />
-          <input id="myEmail" placeholder="Email (optional)" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefc" />
+          <input id="myName" class="input" placeholder="Name (required)" style="flex:1" />
+          <input id="myFc" class="input" placeholder="FC_ID (required)" style="flex:1" />
+          <input id="myEmail" class="input" placeholder="Email (optional)" style="flex:1" />
         </div>
-        <div style="margin-top:10px;text-align:right">
+        <div style="text-align:right;margin-top:10px">
           <button class="btn" onclick="uploadMyPlayer()">Upload</button>
         </div>
-        <div id="uploadStatus" class="small" style="margin-top:8px;color:var(--muted)"></div>
+        <div id="uploadStatus" class="muted" style="margin-top:8px"></div>
       </div>
+    </div>
+
+    <!-- Challenges list -->
+    <div class="challenges" id="challengesList" style="margin-top:18px;max-width:760px">
+      <h4 style="margin:0 0 8px">Recent Challenges</h4>
+      <div id="challInner">Loading challenges...</div>
     </div>
   </div>
 </div>
@@ -194,25 +159,25 @@
 <!-- Profile Modal -->
 <div id="profileModal" class="modal" style="display:none">
   <div class="card">
-    <h3 id="pmTitle">Profile</h3>
+    <h3>Profile</h3>
     <div class="field">
       <label class="small">Signed in as</label>
       <div id="pmName" style="font-weight:700"></div>
     </div>
     <div class="field">
-      <label class="small">Your saved FC_ID</label>
-      <input id="pmFC" placeholder="Enter your FC ID to store locally" />
+      <label class="small">Your FC_ID (saved locally)</label>
+      <input id="pmFC" class="input" placeholder="e.g. FC-1234" />
     </div>
     <div class="field">
-      <label class="small">Your email (optional)</label>
-      <input id="pmEmail" placeholder="email@example.com" />
+      <label class="small">Your Email (optional)</label>
+      <input id="pmEmail" class="input" placeholder="you@example.com" />
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
       <button class="btn" onclick="saveProfile()">Save</button>
       <button onclick="closeProfile()" style="background:#fff;border:1px solid #eee;padding:8px 12px;border-radius:8px;cursor:pointer">Close</button>
     </div>
     <div style="margin-top:10px;text-align:left">
-      <button style="background:#fff;border:1px solid #f66;color:#f66;padding:8px 12px;border-radius:8px;cursor:pointer" onclick="logout()">Logout</button>
+      <button onclick="logout()" style="background:#fff;border:1px solid #f66;color:#f66;padding:8px 12px;border-radius:8px;cursor:pointer">Logout (remove local)</button>
     </div>
   </div>
 </div>
@@ -237,233 +202,253 @@
 <div id="toast"></div>
 
 <script>
-/* ================= SETTINGS ================= */
-const SHEET_API = "https://sheetdb.io/api/v1/cnaot5a2ege6d"; // <- your SheetDB API (already provided)
+/* ========= CONFIG ========= */
+const SHEET_API = "https://sheetdb.io/api/v1/cnaot5a2ege6d"; // <- your SheetDB API
 
-/* ================ UTILITIES ================= */
-function showToast(txt, timeout=3000){
-  const t = document.getElementById('toast');
-  t.innerText = txt; t.style.display='block';
-  setTimeout(()=>{ t.style.display='none'; }, timeout);
+/* ======= UTIL ======= */
+function showToast(msg, t=3000){
+  const el = document.getElementById('toast');
+  el.innerText = msg; el.style.display='block';
+  setTimeout(()=>el.style.display='none', t);
 }
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* =============== LOGIN LOGIC ================ */
+/* ======= LOGIN (local) ======= */
 function isSignedIn(){ return !!localStorage.getItem('skyvs_user'); }
 function doLogin(){
-  const name = document.getElementById('loginName').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
+  const name = (document.getElementById('loginName').value||'').trim();
+  const pass = (document.getElementById('loginPass').value||'').trim();
   if(!name || !pass){ alert('Enter name and password'); return; }
-  // simple local auth - store hashed-ish token (not secure but okay for fun)
   localStorage.setItem('skyvs_user', name);
   localStorage.setItem('skyvs_token', btoa(name+':'+pass));
-  // optional stored profile fields
   if(!localStorage.getItem('skyvs_fc')) localStorage.setItem('skyvs_fc','');
   if(!localStorage.getItem('skyvs_email')) localStorage.setItem('skyvs_email','');
   document.getElementById('loginScreen').style.display='none';
   initAfterLogin();
 }
-
-/* logout */
 function logout(){
-  if(confirm('Logout & remove local profile?')) {
-    localStorage.removeItem('skyvs_user');
-    localStorage.removeItem('skyvs_token');
-    localStorage.removeItem('skyvs_fc');
-    localStorage.removeItem('skyvs_email');
-    location.reload();
-  }
+  if(!confirm('Logout and remove local profile?')) return;
+  localStorage.removeItem('skyvs_user');
+  localStorage.removeItem('skyvs_token');
+  localStorage.removeItem('skyvs_fc');
+  localStorage.removeItem('skyvs_email');
+  location.reload();
 }
 
-/* set profile modal values */
+/* ===== profile modal ===== */
 function openProfile(){
-  const user = localStorage.getItem('skyvs_user') || 'Guest';
-  document.getElementById('pmTitle').innerText = 'Profile';
-  document.getElementById('pmName').innerText = user;
-  document.getElementById('profileModal').style.display='flex';
+  if(!isSignedIn()){ alert('Please sign in first'); return; }
+  document.getElementById('pmName').innerText = localStorage.getItem('skyvs_user') || 'Guest';
   document.getElementById('pmFC').value = localStorage.getItem('skyvs_fc') || '';
   document.getElementById('pmEmail').value = localStorage.getItem('skyvs_email') || '';
-  document.getElementById('profileName').innerText = user;
+  document.getElementById('profileModal').style.display='flex';
 }
 function closeProfile(){ document.getElementById('profileModal').style.display='none'; }
 function saveProfile(){
-  const fc = document.getElementById('pmFC').value.trim();
-  const email = document.getElementById('pmEmail').value.trim();
+  const fc = (document.getElementById('pmFC').value||'').trim();
+  const em = (document.getElementById('pmEmail').value||'').trim();
   localStorage.setItem('skyvs_fc', fc);
-  localStorage.setItem('skyvs_email', email);
+  localStorage.setItem('skyvs_email', em);
   showToast('Profile saved locally');
   closeProfile();
 }
 
-/* ============== LOADING / FLOW ============== */
-function goToInfo(){
-  document.getElementById('warningScreen').style.display='none';
-  document.getElementById('infoScreen').style.display='block';
+/* ===== Loading flow ===== */
+function goToInfo(){ document.getElementById('warningScreen').style.display='none'; document.getElementById('infoScreen').style.display='block'; }
+function openDashboard(){ document.getElementById('infoScreen').style.display='none';
+  if(!isSignedIn()){ document.getElementById('loginScreen').style.display='flex'; } else { initAfterLogin(); }
 }
-function openDashboard(){
-  document.getElementById('infoScreen').style.display='none';
-  // show login if not signed in
-  if(!isSignedIn()){
-    document.getElementById('loginScreen').style.display='flex';
-  } else {
-    initAfterLogin();
-  }
-}
-
-/* hide loading after animation, then show warning */
 window.addEventListener('load', ()=>{
-  // ensure loading finishes before showing warning (mimic real load)
-  setTimeout(()=>{
-    document.getElementById('loadingScreen').style.display='none';
-    document.getElementById('warningScreen').style.display='block';
-  }, 1600);
+  setTimeout(()=>{ document.getElementById('loadingScreen').style.display='none'; document.getElementById('warningScreen').style.display='block'; }, 1400);
 });
 
-/* initialize after login */
+/* ===== After login init ===== */
 function initAfterLogin(){
   document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainWrap').style.display='block';
   document.getElementById('dashboard').style.display='block';
-  document.getElementById('profileName').innerText = localStorage.getItem('skyvs_user') || 'Profile';
+  document.getElementById('signedAs').innerText = 'Signed in as: ' + (localStorage.getItem('skyvs_user') || '');
   loadPlayers();
+  loadChallenges();
 }
 
-/* =============== PLAYER LOADING ================ */
+/* ===== Load players (exclude Action: vs rows) ===== */
 async function loadPlayers(){
-  const container = document.getElementById('playersContainer');
-  container.innerHTML = '<div style="color:#999">Loading players...</div>';
+  const cont = document.getElementById('playersContainer');
+  cont.innerHTML = '<div class="muted">Loading players...</div>';
   try{
     const res = await fetch(SHEET_API);
     if(!res.ok) throw new Error('Fetch error '+res.status);
-    const data = await res.json();
-    // data is array of objects
-    container.innerHTML = '';
-    if(!data.length){ container.innerHTML = '<div style="color:#999">No players yet. Add your player!</div>'; return; }
-    data.forEach(item=>{
-      const name = item.Name || 'Unnamed';
-      const fc = item.FC_ID || '';
-      const email = item.Email || '';
-      const card = document.createElement('div');
-      card.className = 'player-card';
-      card.innerHTML = `<div class="player-name">${escapeHtml(name)}</div>
-                        <div class="player-sub">${escapeHtml(fc)}</div>
-                        <div class="player-meta">${email ? escapeHtml(email) : ''}</div>`;
-      card.onclick = ()=>openPlayerModal(name,fc,email);
-      container.appendChild(card);
+    const arr = await res.json();
+    cont.innerHTML = '';
+    // Show only rows where Action !== 'vs' (i.e., player entries)
+    const players = arr.filter(r => !(r.Action && r.Action.toLowerCase()==='vs'));
+    if(players.length===0){ cont.innerHTML = '<div class="muted">No players yet. Add your player.</div>'; return; }
+    players.forEach(p=>{
+      const name = p.Name || 'Unnamed';
+      const fc = p.FC_ID || '';
+      const email = p.Email || '';
+      const div = document.createElement('div'); div.className='player-card';
+      div.innerHTML = `<div class="player-name">${escapeHtml(name)}</div>
+                       <div class="player-fc">${escapeHtml(fc)}</div>
+                       <div class="player-email">${escapeHtml(email)}</div>`;
+      div.onclick = ()=>openPlayerModal(name,fc,email);
+      cont.appendChild(div);
     });
-  }catch(e){
-    container.innerHTML = '<div style="color:#f44">Failed to load players. Check API & CORS.</div>';
-    console.error(e);
+  }catch(err){
+    console.error(err);
+    cont.innerHTML = '<div class="muted">Failed to load players. Check API & permissions.</div>';
   }
 }
 
-/* ============ ADD / UPLOAD PLAYER ============== */
+/* ===== Upload new player (POST) ===== */
 async function uploadMyPlayer(){
-  const name = document.getElementById('myName').value.trim();
-  const fc = document.getElementById('myFc').value.trim();
-  const email = document.getElementById('myEmail').value.trim();
+  const name = (document.getElementById('myName').value||'').trim();
+  const fc = (document.getElementById('myFc').value||'').trim();
+  const email = (document.getElementById('myEmail').value||'').trim();
   const status = document.getElementById('uploadStatus');
-  if(!name || !fc){ status.innerText = 'Name and FC_ID are required'; return; }
+  if(!name || !fc){ status.innerText = 'Name and FC_ID required'; return; }
   status.innerText = 'Uploading...';
+  const payload = { data: [ { Name: name, FC_ID: fc, Email: email } ] };
   try{
-    const body = { data: [ { Name: name, FC_ID: fc, Email: email } ] };
-    const res = await fetch(SHEET_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const res = await fetch(SHEET_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const json = await res.json();
-    if(res.ok){
+    if(res.ok && (json.created===1 || json.created===1 || json.created>0 || json.affected_rows>0)){
       status.innerText = 'Uploaded ✓';
       document.getElementById('myName').value=''; document.getElementById('myFc').value=''; document.getElementById('myEmail').value='';
-      showToast('Player uploaded to sheet');
-      loadPlayers();
+      showToast('Player added to sheet');
+      await loadPlayers();
     } else {
+      // show server returned message
       status.innerText = 'Upload failed';
-      console.error('Upload error', json);
-      showToast('Upload failed: '+(json.error||'server'));
+      console.error('Upload response', json);
+      showToast('Upload failed: check sheet headers & SheetDB POST permission');
     }
-  }catch(err){
-    status.innerText = 'Upload failed';
-    console.error(err);
-    showToast('Upload failed (network)');
+  }catch(e){
+    console.error(e);
+    status.innerText = 'Upload failed (network)';
+    showToast('Network/API error while uploading');
   }
 }
 
-/* ============= PLAYER MODAL ACTIONS ============= */
+/* ===== Player modal & actions ===== */
 let currentTarget = {name:'',fc:'',email:''};
-function openPlayerModal(name, fc, email){
+function openPlayerModal(name,fc,email){
   currentTarget = {name,fc,email};
-  document.getElementById('playerModal').style.display='flex';
   document.getElementById('pmPlayerTitle').innerText = name;
   document.getElementById('pmPlayerFc').innerText = 'FC ID: ' + (fc||'—');
   document.getElementById('pmPlayerEmail').innerText = 'Email: ' + (email||'—');
+  document.getElementById('playerModal').style.display='flex';
 }
 function closePlayerModal(){ document.getElementById('playerModal').style.display='none'; }
 
-/* Invite (simple copy to clipboard of email or show msg) */
 function invitePlayer(){
   const email = currentTarget.email || '';
   if(email){
-    navigator.clipboard?.writeText(email).then(()=> showToast('Player email copied to clipboard') ).catch(()=> alert('Email: '+email));
+    navigator.clipboard?.writeText(email).then(()=>showToast('Email copied to clipboard')).catch(()=>alert('Email: '+email));
   } else {
     alert('No email available for this player.');
   }
 }
 
-/* VS flow: prompt for your FC ID, then POST a "challenge" entry to sheet */
+/* ===== VS flow: asks user for FC_ID, posts challenge row ===== */
 async function vsPlayerPrompt(){
-  // ensure signed in
   if(!isSignedIn()){ alert('Sign in required'); return; }
-  const userFc = localStorage.getItem('skyvs_fc') || '';
-  const preset = userFc || '';
-  const input = prompt(`Enter YOUR FC ID to VS ${currentTarget.name}:`, preset);
-  if(!input) return;
-  // record challenge to sheet as a new row so you can see who challenged whom
+  // prefer saved profile FC
+  const savedFc = localStorage.getItem('skyvs_fc') || '';
+  const userFC = prompt(`Enter YOUR FC ID to VS ${currentTarget.name}:`, savedFc || '');
+  if(!userFC) return;
+  // prepare challenge row (separate columns)
+  const payload = {
+    data: [ {
+      TargetName: currentTarget.name || '',
+      Target_FC: currentTarget.fc || '',
+      Target_Email: currentTarget.email || '',
+      Challenger_FC: userFC,
+      Action: 'vs',
+      Timestamp: new Date().toISOString()
+    } ]
+  };
   try{
-    const payload = { data: [ { Name: currentTarget.name, FC_ID: input, Email: currentTarget.email || '', Action: 'vs' } ] };
     const res = await fetch(SHEET_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const resj = await res.json();
-    if(res.ok){
+    const json = await res.json();
+    if(res.ok && (json.created===1 || json.created>0 || json.affected_rows>0)){
       showToast('Challenge recorded ✓');
       closePlayerModal();
-      loadPlayers(); // optional: refresh
+      await loadChallenges();
     } else {
-      console.error('vs post error', resj);
-      alert('Could not record challenge. Check API settings.');
+      console.error('Challenge response', json);
+      alert('Could not record challenge — check SheetDB settings or headers.');
     }
   }catch(e){
     console.error(e);
-    alert('Network error recording challenge.');
+    alert('Network error while recording challenge.');
   }
 }
 
-/* ======= small helpers ======= */
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+/* ===== Challenges view ===== */
+async function loadChallenges(){
+  const el = document.getElementById('challInner');
+  el.innerHTML = 'Loading...';
+  try{
+    const res = await fetch(SHEET_API);
+    if(!res.ok) throw new Error('Fetch error '+res.status);
+    const arr = await res.json();
+    // filter challenge rows where Action === 'vs' OR Challenger_FC exists
+    const ch = arr.filter(r => {
+      if(r.Action && r.Action.toLowerCase()==='vs') return true;
+      if(r.Challenger_FC && r.Challenger_FC.trim()!=='') return true;
+      return false;
+    });
+    if(ch.length===0){ el.innerHTML = '<div class="muted">No challenges yet.</div>'; return; }
+    // sort by timestamp desc if exist
+    ch.sort((a,b)=>{
+      const ta = a.Timestamp || ''; const tb = b.Timestamp || '';
+      return (tb.localeCompare(ta));
+    });
+    el.innerHTML = '';
+    ch.slice(0,30).forEach(item=>{
+      const target = item.TargetName || item.Name || 'Unknown';
+      const targetFC = item.Target_FC || item.FC_ID || '';
+      const challenger = item.Challenger_FC || '';
+      const ts = item.Timestamp ? new Date(item.Timestamp).toLocaleString() : '';
+      const div = document.createElement('div'); div.className='chall-item';
+      div.innerHTML = `<strong>${escapeHtml(challenger||'Unknown')}</strong> → ${escapeHtml(target)} ${targetFC? '('+escapeHtml(targetFC)+')':''} <div class="muted" style="margin-top:6px">${escapeHtml(ts)}</div>`;
+      el.appendChild(div);
+    });
+  }catch(e){
+    console.error(e);
+    el.innerHTML = '<div class="muted">Failed to load challenges. Check API.</div>';
+  }
+}
 
-/* show login if not signed in when opening page after the info screen */
+/* ===== init decorative bubbles & initial signed state ===== */
 (function init(){
-  // create decorative bubbles
-  const bubbles = document.createElement('div'); bubbles.className='bubbles';
-  const sizes=[80,140,60,110,90];
-  sizes.forEach((sz,i)=>{
-    const b = document.createElement('div'); b.className='bubble';
-    b.style.width=sz+'px'; b.style.height=sz+'px';
-    b.style.left=(10+20*i)+'%'; b.style.bottom='-'+(50+30*i)+'px';
-    b.style.animation=`rise${i} ${12+4*i}s linear infinite`;
-    b.style.opacity= (i%2?'.65':'.45');
-    bubbles.appendChild(b);
-    // add keyframes dynamically (unique name)
-    const k = `@keyframes rise${i}{0%{transform:translateY(0) scale(.9)}100%{transform:translateY(-120vh) scale(1.15)}}`;
-    const st = document.createElement('style'); st.innerHTML = k; document.head.appendChild(st);
-  });
-  document.body.appendChild(bubbles);
+  // create decorative bubbles (simple)
+  const b = document.createElement('div'); b.style.position='fixed'; b.style.inset='0'; b.style.zIndex='-1';
+  for(let i=0;i<5;i++){
+    const s = document.createElement('div'); s.style.position='absolute';
+    const size = [80,140,60,110,90][i] || 80;
+    s.style.width = size+'px'; s.style.height = size+'px'; s.style.borderRadius='50%';
+    s.style.left = (8+18*i)+'%'; s.style.bottom = '-60px';
+    s.style.background = `radial-gradient(circle at 30% 20%, rgba(77,166,255,0.18), rgba(30,200,255,0.05))`;
+    s.style.filter='blur(8px)'; s.style.opacity = (i%2?0.7:0.45);
+    s.style.animation = `riseAni${i} ${12+3*i}s linear infinite`;
+    b.appendChild(s);
+    const key = `@keyframes riseAni${i}{0%{transform:translateY(0) scale(.9)}100%{transform:translateY(-120vh) scale(1.1)}}`;
+    const st = document.createElement('style'); st.innerText = key; document.head.appendChild(st);
+  }
+  document.body.appendChild(b);
 
-  // show login if already signed in? We keep showing login only if user not signed in and info screen closed.
+  // if signed in, hide login permanently (but dashboard opens after info flow)
   if(isSignedIn()){
-    // hide login screen permanently
     document.getElementById('loginScreen').style.display='none';
-    // but dashboard only appears after you click through the warning/info (handled in openDashboard)
   } else {
-    // ensure profile name placeholder
-    document.getElementById('profileName').innerText = 'Profile';
+    document.getElementById('loginScreen').style.display='none'; // show only after info screen
   }
 })();
 </script>
 </body>
 </html>
+
 
